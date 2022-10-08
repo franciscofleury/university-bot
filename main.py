@@ -6,7 +6,7 @@ from discord.ext import commands
 from discord.ui import *
 from token_reader import read_token
 import requests
-from info import base_url
+from info import base_url, senha
 import json
 
 # SETUP BÁSICO
@@ -30,9 +30,9 @@ class SetupView(View):
             if member.id != interaction.user.id and member.id != client.user.id:
                 dids.append([member.name,member.id])        
         print(dids)
-        class_req = requests.post(base_url+"/create_class",params={"guild": interaction.guild_id, "name":interaction.guild.name})
+        class_req = requests.post(base_url+"/class/create?"+senha, data=json.dumps({"guild_id": interaction.guild_id, "name":interaction.guild.name}),headers={"Content-Type": "application/json"})
         if class_req.status_code == 200:
-            setup_req = requests.post(base_url+"/setup_class",params={"dids":dids, "guild":interaction.guild_id,"prof":interaction.user.id,"prof_name":interaction.user.name})
+            setup_req = requests.post(base_url+"/class/setup/"+str(interaction.guild_id)+"?"+senha, data=json.dumps({"students":dids, "professor": [interaction.user.name, interaction.user.id]}),headers={"Content-Type": "application/json"})
             if setup_req.status_code == 200:
                 print("setup completed")
                 await interaction.response.edit_message(content="Setup completado com sucesso!", view=None)
